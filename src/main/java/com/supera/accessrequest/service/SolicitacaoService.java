@@ -175,13 +175,15 @@ public class SolicitacaoService {
         Solicitacao novaSolicitacao = criarSolicitacaoEntity(solicitacaoOriginal.getUsuario(), renovacaoRequest);
         novaSolicitacao.setSolicitacaoOrigem(solicitacaoOriginal);
 
-        // Adicionar módulos
-        solicitacaoOriginal.getModulos().forEach(sm -> novaSolicitacao.addModulo(sm.getModulo()));
-
         // Reaplicar regras de negócio
         List<Modulo> modulos = solicitacaoOriginal.getModulos().stream()
                 .map(SolicitacaoModulo::getModulo)
                 .collect(Collectors.toList());
+
+        // Adicionar módulos
+        for (Modulo modulo : modulos) {
+            novaSolicitacao.addModulo(modulo);
+        }
 
         String resultadoValidacao = validarRegrasNegocio(solicitacaoOriginal.getUsuario(), modulos);
 

@@ -35,6 +35,7 @@ public class Solicitacao {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String justificativa;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean urgente = false;
 

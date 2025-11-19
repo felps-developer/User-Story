@@ -36,6 +36,7 @@ public class Usuario {
     @Column(nullable = false, length = 50)
     private Departamento departamento;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean ativo = true;
 

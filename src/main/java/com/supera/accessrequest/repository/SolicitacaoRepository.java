@@ -50,8 +50,9 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
             @Param("status") StatusSolicitacao status
     );
     
-    @Query("SELECT COUNT(s) FROM Solicitacao s " +
-           "WHERE DATE(s.dataSolicitacao) = CURRENT_DATE")
+    @Query(value = "SELECT COUNT(*) FROM solicitacao " +
+           "WHERE DATE(data_solicitacao) = CURRENT_DATE", 
+           nativeQuery = true)
     long countSolicitacoesHoje();
 }
 

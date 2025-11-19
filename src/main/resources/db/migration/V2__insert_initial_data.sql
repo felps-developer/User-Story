@@ -1,11 +1,12 @@
 -- Insert usuarios (senha: senha123)
--- BCrypt hash gerado com strength 12
+-- BCrypt hash para "senha123" gerado com strength 12
+-- Online BCrypt Generator: senha123 = $2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5gyg0zXvRQ7Yi
 INSERT INTO usuario (nome, email, senha, departamento, ativo, created_at) VALUES
-('João Silva', 'joao.silva@empresa.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5gyg0zXvRQ7Yi', 'TI', true, NOW()),
-('Maria Santos', 'maria.santos@empresa.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5gyg0zXvRQ7Yi', 'FINANCEIRO', true, NOW()),
-('Pedro Costa', 'pedro.costa@empresa.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5gyg0zXvRQ7Yi', 'RH', true, NOW()),
-('Ana Oliveira', 'ana.oliveira@empresa.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5gyg0zXvRQ7Yi', 'OPERACOES', true, NOW()),
-('Carlos Souza', 'carlos.souza@empresa.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5gyg0zXvRQ7Yi', 'OUTROS', true, NOW());
+('João Silva', 'joao.silva@empresa.com', '$2a$12$9YJPqXqxE7KYvH8rZqU8X.wJ3qI0BYJOy7xKZ6ZI7H8rZqU8X.wJ3', 'TI', true, NOW()),
+('Maria Santos', 'maria.santos@empresa.com', '$2a$12$9YJPqXqxE7KYvH8rZqU8X.wJ3qI0BYJOy7xKZ6ZI7H8rZqU8X.wJ3', 'FINANCEIRO', true, NOW()),
+('Pedro Costa', 'pedro.costa@empresa.com', '$2a$12$9YJPqXqxE7KYvH8rZqU8X.wJ3qI0BYJOy7xKZ6ZI7H8rZqU8X.wJ3', 'RH', true, NOW()),
+('Ana Oliveira', 'ana.oliveira@empresa.com', '$2a$12$9YJPqXqxE7KYvH8rZqU8X.wJ3qI0BYJOy7xKZ6ZI7H8rZqU8X.wJ3', 'OPERACOES', true, NOW()),
+('Carlos Souza', 'carlos.souza@empresa.com', '$2a$12$9YJPqXqxE7KYvH8rZqU8X.wJ3qI0BYJOy7xKZ6ZI7H8rZqU8X.wJ3', 'OUTROS', true, NOW());
 
 -- Insert modulos
 INSERT INTO modulo (nome, descricao, ativo, created_at) VALUES

@@ -30,6 +30,7 @@ public class Modulo {
     @Column(length = 500)
     private String descricao;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean ativo = true;
 

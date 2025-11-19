@@ -41,6 +41,7 @@ public class AcessoUsuarioModulo {
     @Column(name = "data_expiracao", nullable = false)
     private LocalDateTime dataExpiracao;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean ativo = true;
 }
