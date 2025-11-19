@@ -1,0 +1,101 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: access-request-db
+    environment:
+      POSTGRES_DB: accessrequest
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app1:
+    build: .
+    container_name: access-request-app1
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/accessrequest
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:-c3VwZXJhLWFjY2Vzcy1yZXF1ZXN0LXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLWFuZC12YWxpZGF0aW9u}
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  app2:
+    build: .
+    container_name: access-request-app2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/accessrequest
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:-c3VwZXJhLWFjY2Vzcy1yZXF1ZXN0LXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLWFuZC12YWxpZGF0aW9u}
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  app3:
+    build: .
+    container_name: access-request-app3
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/accessrequest
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:-c3VwZXJhLWFjY2Vzcy1yZXF1ZXN0LXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLWFuZC12YWxpZGF0aW9u}
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8083:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: access-request-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app1
+      - app2
+      - app3
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
