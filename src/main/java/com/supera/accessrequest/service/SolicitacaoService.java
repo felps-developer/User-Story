@@ -115,10 +115,14 @@ public class SolicitacaoService {
     ) {
         Long usuarioId = authService.getUsuarioLogadoId();
         
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dataSolicitacao"));
+        // Usando nome da coluna do banco (data_solicitacao) pois é native query
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "data_solicitacao"));
+        
+        // Convertendo enum para String para compatibilidade com native query
+        String statusStr = status != null ? status.name() : null;
         
         Page<Solicitacao> solicitacoes = solicitacaoRepository.findByUsuarioIdWithFilters(
-                usuarioId, status, urgente, dataInicio, dataFim, pesquisa, pageable
+                usuarioId, statusStr, urgente, dataInicio, dataFim, pesquisa, pageable
         );
 
         return solicitacoes.map(SolicitacaoResponse::fromEntity);

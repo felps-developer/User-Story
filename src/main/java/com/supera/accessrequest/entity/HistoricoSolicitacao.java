@@ -27,7 +27,7 @@ public class HistoricoSolicitacao {
     @Column(nullable = false, length = 50)
     private String acao;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String descricao;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -32,7 +32,7 @@ public class Solicitacao {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String justificativa;
 
     @Builder.Default
@@ -43,10 +43,10 @@ public class Solicitacao {
     @Column(nullable = false, length = 20)
     private StatusSolicitacao status;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String motivoNegacao;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String motivoCancelamento;
 
     @Column(name = "data_solicitacao", nullable = false)

@@ -22,16 +22,19 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     
     Page<Solicitacao> findByUsuarioIdAndStatus(Long usuarioId, StatusSolicitacao status, Pageable pageable);
     
-    @Query("SELECT s FROM Solicitacao s " +
-           "WHERE s.usuario.id = :usuarioId " +
-           "AND (:status IS NULL OR s.status = :status) " +
+    @Query(value = "SELECT DISTINCT s.* FROM solicitacao s " +
+           "LEFT JOIN solicitacao_modulo sm ON s.id = sm.solicitacao_id " +
+           "LEFT JOIN modulo m ON sm.modulo_id = m.id " +
+           "WHERE s.usuario_id = :usuarioId " +
+           "AND (:status IS NULL OR s.status = CAST(:status AS VARCHAR)) " +
            "AND (:urgente IS NULL OR s.urgente = :urgente) " +
-           "AND (:dataInicio IS NULL OR s.dataSolicitacao >= :dataInicio) " +
-           "AND (:dataFim IS NULL OR s.dataSolicitacao <= :dataFim) " +
-           "AND (:pesquisa IS NULL OR LOWER(s.protocolo) LIKE LOWER(CONCAT('%', :pesquisa, '%')))")
+           "AND (CAST(:dataInicio AS TIMESTAMP) IS NULL OR s.data_solicitacao >= CAST(:dataInicio AS TIMESTAMP)) " +
+           "AND (CAST(:dataFim AS TIMESTAMP) IS NULL OR s.data_solicitacao <= CAST(:dataFim AS TIMESTAMP)) " +
+           "AND (:pesquisa IS NULL OR s.protocolo ILIKE CONCAT('%', :pesquisa, '%') OR m.nome ILIKE CONCAT('%', :pesquisa, '%'))",
+           nativeQuery = true)
     Page<Solicitacao> findByUsuarioIdWithFilters(
             @Param("usuarioId") Long usuarioId,
-            @Param("status") StatusSolicitacao status,
+            @Param("status") String status,
             @Param("urgente") Boolean urgente,
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim,
