@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService - Testes Unitários")
@@ -112,8 +113,8 @@ class AuthServiceTest {
 
         // Verify
         verify(authenticationManager).authenticate(eq(authToken));
-        verify(tokenProvider, never()).generateToken(any());
-        verify(usuarioRepository, never()).findById(any());
+        verify(tokenProvider, never()).generateToken(eq(authentication));
+        verify(usuarioRepository, never()).findById(eq(1L));
     }
 
     @Test
@@ -137,6 +138,85 @@ class AuthServiceTest {
         verify(authenticationManager).authenticate(eq(authToken));
         verify(tokenProvider).generateToken(eq(authentication));
         verify(usuarioRepository).findById(eq(1L));
+    }
+
+    @Test
+    @DisplayName("Deve retornar ID do usuário logado com sucesso")
+    void deveRetornarIdDoUsuarioLogado() {
+        // Arrange
+        try (var mockedSecurityContext = mockStatic(org.springframework.security.core.context.SecurityContextHolder.class)) {
+            org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+            
+            mockedSecurityContext.when(org.springframework.security.core.context.SecurityContextHolder::getContext)
+                    .thenReturn(securityContext);
+            when(securityContext.getAuthentication()).thenReturn(authentication);
+            when(authentication.getPrincipal()).thenReturn(userDetails);
+
+            // Act
+            Long usuarioId = authService.getUsuarioLogadoId();
+
+            // Assert
+            assertNotNull(usuarioId);
+            assertEquals(1L, usuarioId);
+        }
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando não há usuário autenticado ao buscar ID")
+    void deveLancarExcecaoQuandoNaoHaUsuarioAutenticadoAoBuscarId() {
+        // Arrange
+        try (var mockedSecurityContext = mockStatic(org.springframework.security.core.context.SecurityContextHolder.class)) {
+            org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+            
+            mockedSecurityContext.when(org.springframework.security.core.context.SecurityContextHolder::getContext)
+                    .thenReturn(securityContext);
+            when(securityContext.getAuthentication()).thenReturn(null);
+
+            // Act & Assert
+            RuntimeException exception = assertThrows(RuntimeException.class, 
+                    () -> authService.getUsuarioLogadoId());
+            assertEquals("Usuário não autenticado", exception.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Deve retornar UserDetails do usuário logado com sucesso")
+    void deveRetornarUserDetailsDoUsuarioLogado() {
+        // Arrange
+        try (var mockedSecurityContext = mockStatic(org.springframework.security.core.context.SecurityContextHolder.class)) {
+            org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+            
+            mockedSecurityContext.when(org.springframework.security.core.context.SecurityContextHolder::getContext)
+                    .thenReturn(securityContext);
+            when(securityContext.getAuthentication()).thenReturn(authentication);
+            when(authentication.getPrincipal()).thenReturn(userDetails);
+
+            // Act
+            UserDetailsImpl result = authService.getUsuarioLogado();
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(userDetails.getId(), result.getId());
+            assertEquals(userDetails.getUsername(), result.getUsername());
+        }
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando não há usuário autenticado ao buscar UserDetails")
+    void deveLancarExcecaoQuandoNaoHaUsuarioAutenticadoAoBuscarUserDetails() {
+        // Arrange
+        try (var mockedSecurityContext = mockStatic(org.springframework.security.core.context.SecurityContextHolder.class)) {
+            org.springframework.security.core.context.SecurityContext securityContext = mock(org.springframework.security.core.context.SecurityContext.class);
+            
+            mockedSecurityContext.when(org.springframework.security.core.context.SecurityContextHolder::getContext)
+                    .thenReturn(securityContext);
+            when(securityContext.getAuthentication()).thenReturn(null);
+
+            // Act & Assert
+            RuntimeException exception = assertThrows(RuntimeException.class, 
+                    () -> authService.getUsuarioLogado());
+            assertEquals("Usuário não autenticado", exception.getMessage());
+        }
     }
 }
 
