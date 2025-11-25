@@ -6,13 +6,23 @@
 
 Sistema corporativo desenvolvido em Java/Spring Boot para gerenciamento de solicitações de acesso a módulos do sistema. O sistema permite que usuários autenticados solicitem acesso a diferentes módulos, com validação automática de regras de negócio e concessão imediata de acesso quando aprovado.
 
+### Objetivo
+
+Facilitar o processo de solicitação e concessão de acessos a módulos do sistema, automatizando a aprovação baseada em regras de negócio predefinidas, garantindo segurança, rastreabilidade e conformidade com políticas organizacionais.
+
 ### Principais Funcionalidades
 
-- **Autenticação JWT**: Sistema de autenticação seguro com tokens JWT
-- **Solicitação de Acesso**: Criação de solicitações com validação automática de regras
-- **Concessão Automática**: Aprovação/negação automática baseada em regras de negócio
+- **Autenticação JWT**: Sistema de autenticação seguro com tokens JWT (expiração de 15 minutos)
+- **Solicitação de Acesso**: Criação de solicitações com validação automática de regras de negócio
+- **Concessão Automática**: Aprovação/negação automática baseada em:
+  - Compatibilidade de departamento
+  - Módulos mutuamente exclusivos
+  - Limite de módulos por usuário
+  - Validação de justificativa
 - **Gestão de Solicitações**: Consulta, renovação e cancelamento de solicitações
-- **Consulta de Módulos**: Listagem de módulos disponíveis com informações de compatibilidade
+- **Consulta de Módulos**: Listagem de módulos disponíveis com informações de compatibilidade e incompatibilidades
+- **Histórico de Alterações**: Rastreamento completo de todas as mudanças nas solicitações
+- **Protocolo Único**: Geração automática de protocolos no formato SOL-YYYYMMDD-NNNN
 
 ---
 
@@ -20,67 +30,105 @@ Sistema corporativo desenvolvido em Java/Spring Boot para gerenciamento de solic
 
 ### Backend
 
-- **Java**: 21
-- **Spring Boot**: 3.3.5
-- **Spring Data JPA**: 3.3.5
-- **Spring Security**: 3.3.5
-- **Spring Validation**: 3.3.5
-- **SpringDoc OpenAPI (Swagger)**: 2.6.0
-- **JWT (jjwt)**: 0.12.6
-- **Lombok**: (incluído no Spring Boot)
-- **Maven**: 3.9+
+| Tecnologia                      | Versão     | Descrição                           |
+| ------------------------------- | ---------- | ----------------------------------- |
+| **Java**                        | 21         | Linguagem de programação (LTS)      |
+| **Spring Boot**                 | 3.3.5      | Framework principal da aplicação    |
+| **Spring Data JPA**             | 3.3.5      | Persistência de dados               |
+| **Spring Security**             | 3.3.5      | Autenticação e autorização          |
+| **Spring Validation**           | 3.3.5      | Validação de dados                  |
+| **SpringDoc OpenAPI (Swagger)** | 2.6.0      | Documentação da API                 |
+| **JWT (jjwt)**                  | 0.12.6     | Geração e validação de tokens JWT   |
+| **Lombok**                      | (incluído) | Redução de boilerplate              |
+| **Maven**                       | 3.9+       | Gerenciador de dependências e build |
 
 ### Banco de Dados
 
-- **PostgreSQL**: 17 (produção)
-- **H2**: (apenas para testes)
-- **Flyway**: (migrations)
+| Tecnologia     | Versão     | Uso                                   |
+| -------------- | ---------- | ------------------------------------- |
+| **PostgreSQL** | 17         | Banco de dados de produção            |
+| **H2**         | (incluído) | Banco de dados em memória para testes |
+| **Flyway**     | (incluído) | Versionamento e migração do schema    |
 
 ### Testes
 
-- **JUnit 5**: (incluído no Spring Boot)
-- **Mockito**: (incluído no Spring Boot)
-- **MockMvc**: (incluído no Spring Boot)
-- **Spring Security Test**: (incluído no Spring Boot)
-- **JaCoCo**: 0.8.12
-- **Instancio**: 5.0.1
+| Tecnologia               | Versão     | Descrição                      |
+| ------------------------ | ---------- | ------------------------------ |
+| **JUnit 5**              | (incluído) | Framework de testes            |
+| **Mockito**              | (incluído) | Framework de mocking           |
+| **MockMvc**              | (incluído) | Testes de integração HTTP      |
+| **Spring Security Test** | (incluído) | Testes de segurança            |
+| **JaCoCo**               | 0.8.12     | Análise de cobertura de código |
+| **Instancio**            | 5.0.1      | Geração de objetos de teste    |
 
 ### Infraestrutura
 
-- **Docker**: 24+
-- **Docker Compose**: 2.x
-- **Nginx**: alpine (load balancer)
+| Tecnologia         | Versão | Descrição                     |
+| ------------------ | ------ | ----------------------------- |
+| **Docker**         | 24+    | Conteinerização               |
+| **Docker Compose** | 2.x    | Orquestração de containers    |
+| **Nginx**          | alpine | Load balancer e reverse proxy |
 
 ---
 
 ## 📦 Pré-requisitos
 
-Antes de executar o projeto, certifique-se de ter instalado:
+Antes de executar o projeto, certifique-se de ter instalado as seguintes ferramentas:
+
+### Obrigatórios
 
 - **Docker**: Versão 24 ou superior
+  - Necessário para executar a aplicação e banco de dados
+  - Download: https://www.docker.com/get-started
 - **Docker Compose**: Versão 2.x ou superior
-- **Maven**: 3.9 ou superior (para execução local dos testes)
+  - Geralmente incluído com Docker Desktop
+  - Necessário para orquestrar múltiplos containers
+
+### Opcionais (para desenvolvimento local)
+
+- **Maven**: 3.9 ou superior
+  - Necessário apenas para executar testes localmente
+  - Download: https://maven.apache.org/download.cgi
+- **Java 21**: (opcional, já incluído no Docker)
+  - Necessário apenas para desenvolvimento sem Docker
 
 ### Verificar Instalação
 
+Execute os seguintes comandos para verificar se as ferramentas estão instaladas:
+
 ```bash
+# Verificar Docker
 docker --version
+# Saída esperada: Docker version 24.x.x ou superior
+
+# Verificar Docker Compose
 docker-compose --version
+# Saída esperada: Docker Compose version v2.x.x ou superior
+
+# Verificar Maven (opcional)
 mvn --version
+# Saída esperada: Apache Maven 3.9.x ou superior
 ```
+
+### Requisitos de Sistema
+
+- **Sistema Operacional**: Windows 10+, Linux ou macOS
+- **RAM**: Mínimo 4GB (recomendado 8GB)
+- **Espaço em Disco**: Mínimo 2GB livres
+- **Portas Disponíveis**: 80, 5432, 8081, 8082, 8083
 
 ---
 
 ## 🚀 Como Executar Localmente com Docker
 
-### 1. Clone o repositório (se aplicável)
+### Passo 1: Clone o repositório
 
 ```bash
 git clone <url-do-repositorio>
 cd User-Story
 ```
 
-### 2. Execute o Docker Compose
+### Passo 2: Execute o Docker Compose
 
 Na raiz do projeto, execute:
 
@@ -90,38 +138,114 @@ docker-compose up -d
 
 Este comando irá:
 
-- Criar e iniciar o container do PostgreSQL 17
-- Construir e iniciar 3 instâncias da aplicação (app1, app2, app3)
-- Iniciar o Nginx como load balancer
-- Configurar a rede Docker para comunicação entre containers
+1. **Criar a rede Docker** (`app-network`) para comunicação entre containers
+2. **Iniciar PostgreSQL 17** na porta 5432
+3. **Construir a imagem da aplicação** (multi-stage build)
+4. **Iniciar 3 instâncias da aplicação**:
+   - App 1 na porta 8081
+   - App 2 na porta 8082
+   - App 3 na porta 8083
+5. **Iniciar Nginx** como load balancer na porta 80
+6. **Executar migrations Flyway** automaticamente
 
-### 3. Aguarde a inicialização
+### Passo 3: Aguarde a inicialização
 
-Aguarde alguns segundos para que todos os serviços iniciem completamente. Você pode verificar os logs:
+Aguarde aproximadamente **30-60 segundos** para que todos os serviços iniciem completamente.
+
+**Verificar status dos containers:**
+
+```bash
+docker-compose ps
+```
+
+**Acompanhar logs em tempo real:**
 
 ```bash
 docker-compose logs -f
 ```
 
-### 4. Acesse a aplicação
+**Verificar logs de um serviço específico:**
 
-- **API via Load Balancer**: http://localhost
-- **Swagger UI**: http://localhost/swagger-ui.html
-- **App 1 (direto)**: http://localhost:8081
-- **App 2 (direto)**: http://localhost:8082
-- **App 3 (direto)**: http://localhost:8083
-- **Health Check**: http://localhost/actuator/health
+```bash
+docker-compose logs -f app1
+docker-compose logs -f postgres
+```
 
-### 5. Parar os containers
+### Passo 4: Verificar se está funcionando
+
+**Health Check:**
+
+```bash
+curl http://localhost/actuator/health
+```
+
+**Resposta esperada:**
+
+```json
+{"status": "UP"}
+```
+
+### Passo 5: Acesse a aplicação
+
+| Serviço                 | URL                                    | Descrição                      |
+| ----------------------- | -------------------------------------- | ------------------------------ |
+| **API (Load Balancer)** | http://localhost                       | Acesso principal via Nginx     |
+| **Swagger UI**          | http://localhost/swagger-ui/index.html | Documentação interativa da API |
+| **App 1 (direto)**      | http://localhost:8081                  | Instância 1 da aplicação       |
+| **App 2 (direto)**      | http://localhost:8082                  | Instância 2 da aplicação       |
+| **App 3 (direto)**      | http://localhost:8083                  | Instância 3 da aplicação       |
+| **Health Check**        | http://localhost/actuator/health       | Status de saúde da aplicação   |
+
+### Passo 6: Parar os containers
+
+**Parar mantendo os dados:**
 
 ```bash
 docker-compose down
 ```
 
-Para remover também os volumes (dados do banco):
+**Parar e remover volumes (limpar dados do banco):**
 
 ```bash
 docker-compose down -v
+```
+
+**Parar e remover imagens:**
+
+```bash
+docker-compose down --rmi all
+```
+
+### Troubleshooting
+
+**Problema: Porta já em uso**
+
+```bash
+# Verificar qual processo está usando a porta
+netstat -ano | findstr :80
+
+# Parar containers conflitantes
+docker-compose down
+```
+
+**Problema: Containers não iniciam**
+
+```bash
+# Verificar logs de erro
+docker-compose logs
+
+# Reconstruir imagens
+docker-compose up -d --build
+```
+
+**Problema: Banco de dados não conecta**
+
+```bash
+# Verificar se PostgreSQL está healthy
+docker ps | grep postgres
+
+# Verificar logs do banco
+docker logs access-request-db
 ```
 
 ---
@@ -134,11 +258,23 @@ docker-compose down -v
 mvn test
 ```
 
+**Resultado esperado:**
+
+```
+Tests run: 56, Failures: 0, Errors: 0, Skipped: 0
+```
+
 ### Executar testes com cobertura JaCoCo
 
 ```bash
 mvn clean test jacoco:report
 ```
+
+Este comando:
+
+- Limpa o diretório `target`
+- Executa todos os testes
+- Gera relatório de cobertura em `target/site/jacoco/index.html`
 
 ### Executar apenas testes unitários
 
@@ -146,11 +282,50 @@ mvn clean test jacoco:report
 mvn test -Dtest=*Test
 ```
 
+Executa apenas classes de teste que terminam com `Test` (exclui `IntegrationTest`).
+
 ### Executar apenas testes de integração
 
 ```bash
 mvn test -Dtest=*IntegrationTest
 ```
+
+Executa apenas classes de teste que terminam com `IntegrationTest`.
+
+### Executar teste específico
+
+```bash
+mvn test -Dtest=SolicitacaoServiceTest
+```
+
+### Validar cobertura mínima
+
+```bash
+mvn clean verify
+```
+
+Este comando:
+
+- Executa todos os testes
+- Gera relatório de cobertura
+- **Falha o build** se cobertura < 80% (linhas) ou < 75% (branches)
+
+### Estrutura de Testes
+
+```
+src/test/java/com/supera/accessrequest/
+├── controller/
+│   ├── AuthControllerIntegrationTest.java
+│   └── ModuloControllerIntegrationTest.java
+├── service/
+│   ├── AuthServiceTest.java
+│   ├── ModuloServiceTest.java
+│   └── SolicitacaoServiceTest.java
+└── util/
+    └── ProtocoloGeneratorTest.java
+```
+
+**Total:** 56 testes cobrindo todos os cenários de negócio.
 
 ---
 
@@ -158,16 +333,30 @@ mvn test -Dtest=*IntegrationTest
 
 ### 1️⃣ Relatório JaCoCo Básico (HTML)
 
-Gera relatório HTML com gráficos de cobertura:
+Gera relatório HTML interativo com gráficos de cobertura:
 
 ```bash
 mvn clean test jacoco:report
 ```
 
 **Arquivos gerados:**
-- `target/site/jacoco/index.html` - Relatório HTML interativo
-- `target/site/jacoco/jacoco.xml` - Relatório XML
-- `target/site/jacoco/jacoco.csv` - Relatório CSV
+
+- `target/site/jacoco/index.html` - Relatório HTML interativo (abrir no navegador)
+- `target/site/jacoco/jacoco.xml` - Relatório XML (para integração com CI/CD)
+- `target/site/jacoco/jacoco.csv` - Relatório CSV (para análise em planilhas)
+
+**Abrir no navegador:**
+
+```bash
+# Windows
+start target\site\jacoco\index.html
+
+# Linux
+xdg-open target/site/jacoco/index.html
+
+# macOS
+open target/site/jacoco/index.html
+```
 
 ### 2️⃣ Relatório Completo com Site Maven
 
@@ -178,33 +367,31 @@ mvn clean verify site -Prelatorio-completo
 ```
 
 **Arquivos gerados:**
-- `target/site/index.html` - Site completo com todos os relatórios
-- `target/site/jacoco/index.html` - Relatório JaCoCo com gráficos
-- `target/surefire-reports/` - Relatórios detalhados dos testes
+
+- `target/site/index.html` - Página principal do site Maven
+- `target/site/jacoco/index.html` - Relatório JaCoCo com gráficos visuais
+- `target/site/surefire-report.html` - Relatório consolidado de testes
+- `target/surefire-reports/` - Relatórios detalhados em XML/TXT por classe
 - Múltiplos formatos: HTML, XML, CSV
 
-### 3️⃣ Scripts Automatizados (Opcional)
-
-**Windows (PowerShell):**
-
-```powershell
-.\open-jacoco-report.ps1
-```
-
-**Windows (Batch):**
-
-```cmd
-open-jacoco-report.bat
-```
-
-### 4️⃣ Gerar PDF do Relatório JaCoCo
-
-#### **📝 PASSO A PASSO COMPLETO:**
-
-**1. Gere o relatório primeiro:**
+**Abrir site completo:**
 
 ```bash
-mvn clean verify site -Prelatorio-completo
+# Windows
+start target\site\index.html
+
+# Linux/Mac
+open target/site/index.html
+```
+
+### 3️⃣ Gerar PDF do Relatório JaCoCo
+
+Para gerar o relatório em PDF, siga os passos abaixo:
+
+**1. Gere o relatório HTML primeiro:**
+
+```bash
+mvn clean test jacoco:report
 ```
 
 **2. Abra o relatório no navegador:**
@@ -220,6 +407,7 @@ open target/site/jacoco/index.html
 **3. No navegador, pressione `Ctrl + P` (Imprimir)**
 
 **4. Configure a impressão:**
+
 - **Destino:** Selecione **"Salvar como PDF"** ou **"Microsoft Print to PDF"**
 - **Layout:** **Paisagem** (recomendado para tabelas)
 - **Páginas:** Todas
@@ -230,62 +418,12 @@ open target/site/jacoco/index.html
 
 **5. Clique em "Salvar"**
 
-**6. Nome sugerido:** `relatorio-jacoco-cobertura-AAAA-MM-DD.pdf`
+**Nome sugerido:** `relatorio-jacoco-cobertura-AAAA-MM-DD.pdf`
 
-#### **🎨 Dicas para PDF Profissional:**
-
-**Para incluir detalhes específicos:**
-```
-1. Abra o relatório principal (index.html)
-2. Clique no pacote/classe que deseja detalhar
-3. Gere PDF individual de cada seção importante
-4. Use ferramentas para mesclar PDFs se necessário
-```
-
-**Ajustes de visualização antes de salvar:**
-- **Zoom:** 80-90% (para caber mais informação por página)
-- **Imprimir em:** Cores (recomendado para ver status verde/vermelho)
-- **Qualidade:** Alta
-
-#### **🔧 Método Alternativo - Linha de Comando:**
-
-Se tiver Chrome instalado, pode usar linha de comando:
-
-**Windows:**
-```powershell
-# Caminho padrão do Chrome
-$chrome = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-& $chrome --headless --disable-gpu --print-to-pdf="relatorio-jacoco.pdf" "$PWD\target\site\jacoco\index.html"
-```
-
-**Linux/Mac:**
-```bash
-google-chrome --headless --disable-gpu --print-to-pdf=relatorio-jacoco.pdf target/site/jacoco/index.html
-```
-
-#### **📦 Ferramentas de Conversão Profissionais:**
-
-Para PDFs mais sofisticados, você pode usar:
-
-| Ferramenta | Descrição | Comando |
-|------------|-----------|---------|
-| [wkhtmltopdf](https://wkhtmltopdf.org/) | Conversor HTML para PDF | `wkhtmltopdf --enable-local-file-access target/site/jacoco/index.html relatorio.pdf` |
-| [Puppeteer](https://pptr.dev/) | Automação Chrome/Node.js | Requer script Node.js |
-| [WeasyPrint](https://weasyprint.org/) | Python para PDF | `weasyprint target/site/jacoco/index.html relatorio.pdf` |
-
-#### **📊 Conteúdo do PDF Gerado:**
-
-O PDF incluirá:
-- ✅ Tabela de cobertura geral (% de instruções, branches, métodos)
-- ✅ Gráficos de barras coloridos por pacote
-- ✅ Lista de todas as classes com percentuais
-- ✅ Indicadores visuais (verde/amarelo/vermelho)
-- ✅ Total de linhas testadas vs não testadas
-- ✅ Complexidade ciclomática
-
-### 📈 Visualizando os Gráficos
+### 4️⃣ Visualizando os Gráficos
 
 Os relatórios incluem gráficos visuais de:
+
 - ✅ **Cobertura de Instruções** (linha por linha)
 - ✅ **Cobertura de Branches** (condicionais)
 - ✅ **Cobertura de Métodos**
@@ -293,103 +431,30 @@ Os relatórios incluem gráficos visuais de:
 - ✅ **Complexidade Ciclomática**
 
 Todos com indicadores visuais de cores:
+
 - 🟢 Verde: Alta cobertura (≥ 80%)
 - 🟡 Amarelo: Cobertura média (50-79%)
 - 🔴 Vermelho: Baixa cobertura (< 50%)
 
 ---
 
-## ⚙️ Comandos Maven Disponíveis
-
-### Comandos Básicos
-
-```bash
-# Compilar o projeto
-mvn compile
-
-# Limpar o projeto
-mvn clean
-
-# Executar testes
-mvn test
-
-# Gerar JAR
-mvn package
-
-# Instalar no repositório local
-mvn install
-```
-
-### Comandos de Testes e Cobertura
-
-```bash
-# Testes com cobertura básica
-mvn clean test jacoco:report
-
-# Testes com cobertura e validação (verifica se atingiu 80%)
-mvn clean verify
-
-# Apenas relatório JaCoCo (sem executar testes novamente)
-mvn jacoco:report
-
-# Relatório completo com site Maven
-mvn clean verify site -Prelatorio-completo
-```
-
-### Comandos de Análise
-
-```bash
-# Verificar dependências desatualizadas
-mvn versions:display-dependency-updates
-
-# Verificar plugins desatualizados
-mvn versions:display-plugin-updates
-
-# Análise de dependências
-mvn dependency:tree
-
-# Análise de dependências conflitantes
-mvn dependency:analyze
-```
-
-### Perfis Disponíveis
-
-O projeto possui os seguintes perfis Maven:
-
-| Profile | Descrição | Comando |
-|---------|-----------|---------|
-| `relatorio-completo` | Gera site completo com relatórios detalhados | `mvn verify -Prelatorio-completo` |
-
-### Estrutura de Relatórios Gerados
-
-```
-target/
-├── site/
-│   ├── index.html              # Página principal do site
-│   ├── jacoco/
-│   │   ├── index.html          # Relatório JaCoCo visual
-│   │   ├── jacoco.xml          # Relatório XML
-│   │   └── jacoco.csv          # Relatório CSV
-│   └── surefire-report.html    # Relatório de testes
-├── surefire-reports/           # Relatórios detalhados em XML/TXT
-└── jacoco.exec                 # Arquivo binário de cobertura
-```
-
----
-
 ## 🔐 Credenciais para Teste
 
-O sistema vem pré-configurado com os seguintes usuários (senha padrão: `senha123`):
+O sistema vem pré-configurado com os seguintes usuários para testes. Todos possuem a senha padrão: `senha123`
 
-| Nome         | Email                    | Departamento | Senha    |
-| ------------ | ------------------------ | ------------ | -------- |
-| João Silva   | joao.silva@empresa.com   | TI           | senha123 |
-| Maria Santos | maria.santos@empresa.com | FINANCEIRO   | senha123 |
-| Pedro Costa  | pedro.costa@empresa.com  | RH           | senha123 |
-| Ana Oliveira | ana.oliveira@empresa.com | OPERACOES    | senha123 |
-| Carlos Souza | carlos.souza@empresa.com | OUTROS       | senha123 |
+| Nome         | Email                    | Departamento | Senha    | Permissões de Módulos                |
+| ------------ | ------------------------ | ------------ | -------- | ------------------------------------ |
+| João Silva   | joao.silva@empresa.com   | TI           | senha123 | Todos os módulos                     |
+| Maria Santos | maria.santos@empresa.com | FINANCEIRO   | senha123 | Financeiro, Relatórios, Portal       |
+| Pedro Costa  | pedro.costa@empresa.com  | RH           | senha123 | RH, Relatórios, Portal               |
+| Ana Oliveira | ana.oliveira@empresa.com | OPERACOES    | senha123 | Estoque, Compras, Relatórios, Portal |
+| Carlos Souza | carlos.souza@empresa.com | OUTROS       | senha123 | Portal, Relatórios                   |
 
-**Importante**: As senhas são criptografadas com BCrypt (strength 12) no banco de dados.
+**Importante**:
+
+- As senhas são criptografadas com **BCrypt (strength 12)** no banco de dados
+- Os usuários são criados automaticamente via migrations Flyway
+- Todos os usuários estão ativos e prontos para uso
 
 ---
 
@@ -492,77 +557,188 @@ curl -X PUT http://localhost/api/solicitacoes/1/cancelar \
 
 ## 🏗️ Arquitetura da Solução
 
-### Visão Geral
+### Visão Geral da Infraestrutura
 
-O sistema foi desenvolvido seguindo uma arquitetura em camadas (Layered Architecture) com os seguintes componentes:
+O sistema foi desenvolvido seguindo uma arquitetura em camadas (Layered Architecture) com balanceamento de carga e alta disponibilidade:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Nginx (Load Balancer)                │
-│                    Porta: 80                            │
+│              Cliente / Navegador / Postman               │
+└────────────────────┬────────────────────────────────────┘
+                     │ HTTP/HTTPS
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│              Nginx (Load Balancer)                      │
+│              Porta: 80                                  │
+│              Estratégia: least_conn                     │
 └────────────────────┬────────────────────────────────────┘
                      │
         ┌────────────┼────────────┐
         │            │            │
-┌───────▼───┐ ┌──────▼──────┐ ┌──▼───────┐
-│   App 1   │ │    App 2    │ │   App 3  │
-│  :8081    │ │    :8082     │ │  :8083   │
-└───────┬───┘ └──────┬──────┘ └──┬───────┘
-        │            │            │
-        └────────────┼────────────┘
-                     │
-        ┌────────────▼────────────┐
-        │   PostgreSQL 17         │
-        │   Porta: 5432           │
-        └─────────────────────────┘
+        ▼            ▼            ▼
+┌───────────┐ ┌───────────┐ ┌───────────┐
+│   App 1   │ │   App 2   │ │   App 3   │
+│  :8081    │ │  :8082    │ │  :8083    │
+│ (healthy) │ │ (healthy) │ │ (healthy) │
+└─────┬─────┘ └─────┬─────┘ └─────┬─────┘
+      │             │             │
+      └─────────────┼─────────────┘
+                    │ JDBC
+                    ▼
+        ┌───────────────────────┐
+        │   PostgreSQL 17       │
+        │   Porta: 5432         │
+        │   (healthy)           │
+        └───────────────────────┘
+
+    ┌───────────────────────────────┐
+    │   Rede Docker: app-network    │
+    │   Driver: bridge              │
+    │   DNS Interno: app1, app2...  │
+    └───────────────────────────────┘
 ```
 
 ### Camadas da Aplicação
 
-1. **Controller Layer**: Endpoints REST (`AuthController`, `SolicitacaoController`, `ModuloController`)
-2. **Service Layer**: Lógica de negócio (`AuthService`, `SolicitacaoService`, `ModuloService`)
-3. **Repository Layer**: Acesso a dados (JPA Repositories)
-4. **Entity Layer**: Modelos de domínio (JPA Entities)
-5. **Security Layer**: Autenticação e autorização JWT
-6. **Exception Handling**: Tratamento global de exceções
+A aplicação segue o padrão de arquitetura em camadas:
+
+```
+┌─────────────────────────────────────────┐
+│  Controller Layer (REST API)           │
+│  - AuthController                       │
+│  - SolicitacaoController                │
+│  - ModuloController                     │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│  Service Layer (Lógica de Negócio)      │
+│  - AuthService                          │
+│  - SolicitacaoService                   │
+│  - ModuloService                        │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│  Repository Layer (Acesso a Dados)      │
+│  - JPA Repositories                     │
+│  - Queries customizadas                 │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│  Entity Layer (Modelo de Domínio)       │
+│  - Usuario, Solicitacao, Modulo, etc.   │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│  Database Layer (PostgreSQL)           │
+│  - Tabelas relacionais                  │
+│  - Índices e constraints               │
+└─────────────────────────────────────────┘
+```
+
+**Camadas de Suporte:**
+
+- **Security Layer**: Autenticação JWT e autorização
+- **Exception Handling**: Tratamento global de exceções
+- **Validation Layer**: Validação de dados de entrada
+- **DTO Layer**: Transferência de dados (Records)
 
 ### Fluxo de Autenticação
 
 ```
-Cliente → POST /api/auth/login
-         ↓
-    AuthService valida credenciais
-         ↓
-    Gera token JWT (expira em 15 min)
-         ↓
-    Retorna token para cliente
-         ↓
-Cliente usa token em requisições: Authorization: Bearer {token}
+┌────────┐
+│Cliente │
+└───┬────┘
+    │ POST /api/auth/login
+    │ { email, senha }
+    ▼
+┌─────────────────────┐
+│  AuthController     │
+└───────┬─────────────┘
+        │
+        ▼
+┌─────────────────────┐
+│  AuthService        │
+│  - Valida credenciais│
+│  - Gera token JWT   │
+└───────┬─────────────┘
+        │
+        ▼
+┌─────────────────────┐
+│  JwtTokenProvider   │
+│  - Expiração: 15min │
+└───────┬─────────────┘
+        │
+        ▼
+┌─────────────────────┐
+│  Retorna:           │
+│  { token, tipo,     │
+│    usuarioId, ... } │
+└─────────────────────┘
 ```
 
 ### Fluxo de Solicitação de Acesso
 
 ```
-Cliente → POST /api/solicitacoes (com token JWT)
-         ↓
-    SolicitacaoService valida:
-    - Usuário autenticado
-    - Módulos válidos
-    - Regras de negócio
-         ↓
-    Aplica regras:
-    - Compatibilidade de departamento
-    - Módulos mutuamente exclusivos
-    - Limite de módulos
-    - Validação de justificativa
-         ↓
-    Se aprovado: Cria acesso e retorna ATIVO
-    Se negado: Retorna NEGADO com motivo
+┌────────┐
+│Cliente │
+└───┬────┘
+    │ POST /api/solicitacoes
+    │ Authorization: Bearer {token}
+    │ { modulosIds, justificativa, urgente }
+    ▼
+┌─────────────────────┐
+│ SolicitacaoController│
+└───────┬─────────────┘
+        │
+        ▼
+┌─────────────────────┐
+│ SolicitacaoService  │
+│                     │
+│ 1. Validações:      │
+│    - Usuário auth   │
+│    - Módulos válidos│
+│    - Sem duplicatas │
+│                     │
+│ 2. Regras Negócio:  │
+│    - Depto permitido│
+│    - Sem conflitos  │
+│    - Limite módulos │
+│    - Justificativa  │
+│                     │
+│ 3. Decisão:         │
+│    - Aprovado → ATIVO│
+│    - Negado → NEGADO│
+└───────┬─────────────┘
+        │
+        ├─ Aprovado ──────► Cria AcessoUsuarioModulo
+        │                    Status: ATIVO
+        │                    Expiração: +180 dias
+        │
+        └─ Negado ─────────► Status: NEGADO
+                             Motivo: {razão}
 ```
 
 ### Balanceamento de Carga
 
-O Nginx utiliza a estratégia `least_conn` (menor número de conexões) para distribuir as requisições entre as 3 instâncias da aplicação, garantindo melhor distribuição de carga.
+**Estratégia:** `least_conn` (menor número de conexões)
+
+**Configuração Nginx:**
+
+```nginx
+upstream backend {
+    least_conn;
+    server app1:8080 max_fails=3 fail_timeout=30s;
+    server app2:8080 max_fails=3 fail_timeout=30s;
+    server app3:8080 max_fails=3 fail_timeout=30s;
+}
+```
+
+**Características:**
+
+- ✅ **Stateless**: Não mantém sessão fixa
+- ✅ **Failover**: Remove instâncias com falha automaticamente
+- ✅ **Health Checks**: Verifica saúde das instâncias
+- ✅ **Distribuição Equilibrada**: Balanceia por menor número de conexões
 
 ---
 
@@ -572,489 +748,236 @@ O Nginx utiliza a estratégia `least_conn` (menor número de conexões) para dis
 
 **Decisão**: Utilizar Flyway ao invés de `ddl-auto: create-drop` para garantir versionamento e controle das mudanças no banco de dados.
 
+**Justificativa**:
+
+- Controle de versão do schema permite rastreabilidade
+- Facilita deploy em diferentes ambientes (dev, staging, prod)
+- Histórico completo de mudanças no banco
+
 **Benefícios**:
 
-- Controle de versão do schema
-- Facilita deploy em diferentes ambientes
-- Histórico de mudanças
+- ✅ Versionamento do schema do banco de dados
+- ✅ Migrations idempotentes e reversíveis
+- ✅ Facilita rollback em caso de problemas
+- ✅ Histórico completo de mudanças
+
+**Implementação**: Migrations em `src/main/resources/db/migration/`
+
+---
 
 ### 2. Multi-stage Docker Build
 
 **Decisão**: Dockerfile com multi-stage build para otimizar o tamanho da imagem final.
 
+**Justificativa**:
+
+- Reduz tamanho da imagem final (de ~500MB para ~200MB)
+- Remove ferramentas de build (Maven) da imagem de produção
+- Melhora segurança (menos superfície de ataque)
+
 **Benefícios**:
 
-- Imagem final menor (apenas JRE, sem Maven)
-- Build mais rápido em produção
-- Separação de responsabilidades
+- ✅ Imagem final menor (apenas JRE 21, sem Maven)
+- ✅ Build mais rápido em produção
+- ✅ Separação clara entre build e runtime
+- ✅ Melhor segurança (menos dependências)
+
+**Estrutura**:
+
+```dockerfile
+# Stage 1: Build (Maven + JDK)
+FROM maven:3.9-eclipse-temurin-21 AS build
+# ... compila aplicação ...
+
+# Stage 2: Runtime (apenas JRE)
+FROM eclipse-temurin:21-jre-alpine
+# ... copia apenas o JAR ...
+```
+
+---
 
 ### 3. JWT com Expiração de 15 minutos
 
 **Decisão**: Tokens JWT com expiração curta (15 minutos) conforme requisito de segurança.
 
+**Justificativa**:
+
+- Reduz janela de ataque em caso de token comprometido
+- Força renovação frequente de autenticação
+- Alinha com boas práticas de segurança
+
 **Benefícios**:
 
-- Maior segurança (tokens expiram rapidamente)
-- Reduz risco de uso indevido de tokens comprometidos
+- ✅ Maior segurança (tokens expiram rapidamente)
+- ✅ Reduz risco de uso indevido de tokens comprometidos
+- ✅ Conformidade com requisitos de segurança
+
+**Implementação**: Configurado em `JwtTokenProvider` com expiração de 15 minutos.
+
+---
 
 ### 4. BCrypt com Strength 12
 
 **Decisão**: Criptografia de senhas com BCrypt usando strength 12.
 
+**Justificativa**:
+
+- Strength 12 oferece excelente segurança
+- Resistente a ataques de força bruta
+- Padrão da indústria para aplicações corporativas
+
 **Benefícios**:
 
-- Alta segurança (resistente a ataques de força bruta)
-- Padrão da indústria para aplicações corporativas
+- ✅ Alta segurança (resistente a ataques de força bruta)
+- ✅ Padrão da indústria para aplicações corporativas
+- ✅ Balanceamento entre segurança e performance
+
+**Implementação**: Configurado no `SecurityConfig` com `BCryptPasswordEncoder`.
+
+---
 
 ### 5. Testes sem uso de `any()` do Mockito
 
 **Decisão**: Proibição do uso de `any()`, `anyString()`, etc. nos testes, exigindo valores específicos.
 
+**Justificativa**:
+
+- Testes mais explícitos são mais confiáveis
+- Facilita identificação de problemas
+- Melhora manutenibilidade
+
 **Benefícios**:
 
-- Testes mais explícitos e claros
-- Maior confiabilidade (testa exatamente o que deve ser testado)
-- Facilita manutenção
+- ✅ Testes mais explícitos e claros
+- ✅ Maior confiabilidade (testa exatamente o que deve ser testado)
+- ✅ Facilita manutenção e debugging
+- ✅ Melhor documentação do comportamento esperado
+
+**Exemplo**:
+
+```java
+// ❌ Evitado
+when(repository.findById(any())).thenReturn(optional);
+
+// ✅ Preferido
+when(repository.findById(eq(1L))).thenReturn(optional);
+```
+
+---
 
 ### 6. JaCoCo com Regras de Cobertura
 
 **Decisão**: Configuração do JaCoCo para falhar o build se cobertura < 80% (linhas) e < 75% (branches).
 
-**Benefícios**:
+**Justificativa**:
 
 - Garante qualidade mínima do código
 - Força escrita de testes adequados
+- Previne regressões
+
+**Benefícios**:
+
+- ✅ Garante qualidade mínima do código
+- ✅ Força escrita de testes adequados
+- ✅ Previne deploy de código sem testes
+
+**Configuração**: Regras definidas no `pom.xml` com falha automática do build.
+
+---
 
 ### 7. Três Instâncias da Aplicação
 
 **Decisão**: Executar 3 instâncias da aplicação para demonstrar balanceamento de carga.
 
+**Justificativa**:
+
+- Demonstra capacidade de alta disponibilidade
+- Permite distribuição de carga
+- Facilita escalabilidade horizontal
+
 **Benefícios**:
 
-- Alta disponibilidade
-- Distribuição de carga
-- Demonstração prática de load balancing
+- ✅ Alta disponibilidade (se uma instância cair, outras continuam)
+- ✅ Distribuição de carga
+- ✅ Demonstração prática de load balancing
+- ✅ Facilita escalabilidade futura
+
+**Implementação**: 3 containers Docker (app1, app2, app3) com Nginx como load balancer.
+
+---
 
 ### 8. Nginx como Load Balancer
 
 **Decisão**: Utilizar Nginx ao invés de outras soluções para balanceamento de carga.
 
-**Benefícios**:
+**Justificativa**:
 
 - Leve e performático
 - Fácil configuração
-- Amplamente utilizado na indústria
+- Amplamente utilizado e testado na indústria
+
+**Benefícios**:
+
+- ✅ Leve e performático
+- ✅ Fácil configuração
+- ✅ Amplamente utilizado na indústria
+- ✅ Suporte a múltiplas estratégias de balanceamento
+
+**Estratégia**: `least_conn` (menor número de conexões) para distribuição equilibrada.
+
+---
 
 ### 9. Records do Java para DTOs
 
 **Decisão**: Utilizar Records (Java 14+) para DTOs ao invés de classes tradicionais.
 
-**Benefícios**:
+**Justificativa**:
 
-- Código mais conciso
+- Código mais conciso e legível
 - Imutabilidade por padrão
 - Menos boilerplate
+
+**Benefícios**:
+
+- ✅ Código mais conciso (menos linhas)
+- ✅ Imutabilidade por padrão (mais seguro)
+- ✅ Menos boilerplate (equals, hashCode, toString automáticos)
+- ✅ Melhor performance (menos overhead)
+
+**Exemplo**:
+
+```java
+// Record (Java 14+)
+public record SolicitacaoRequest(
+    List<Long> modulosIds,
+    String justificativa,
+    Boolean urgente
+) {}
+```
+
+---
 
 ### 10. Spring Profiles
 
 **Decisão**: Configuração de profiles (dev, test, prod) para diferentes ambientes.
 
-**Benefícios**:
+**Justificativa**:
 
-- Configurações específicas por ambiente
+- Permite configurações específicas por ambiente
 - Facilita testes e desenvolvimento
 - Melhor organização
 
----
+**Benefícios**:
 
-# Teste técnico para Desenvolvedor Java Pleno
+- ✅ Configurações específicas por ambiente
+- ✅ Facilita testes e desenvolvimento
+- ✅ Melhor organização
+- ✅ Facilita deploy em diferentes ambientes
 
-## Introdução
+**Profiles configurados**:
 
-Este teste técnico é direcionado para profissionais que tenham interesse em atuar como Desenvolvedor Pleno Java, no desenvolvimento de softwares variados.
-
-O processo seletivo prevê a contratação de 1 profissional para atuação imediata.
-
-**O teste consiste nas seguintes partes:**
-
-- Analise e entendimento dos requisitos em formato de User Story.
-- Arquitetura da solução (API).
-- Arquitetura de Infraestrutura em Containers/Docker.
-- Apresentação Técnica: Reunião online para apresentação da solução desenvolvida.
-
-## Uso de IA
-
-Uso de IA (Cursor, Claude Code, Copilot, etc) é permitido e recomendado para execução do teste, desde que a IA seja apenas um assistente e você saiba responder os questionamentos na entrevista técnica após aprovação do teste.
-
-O responsável pelo código entregue, qualidade, testabilidade e funcionamento é do desenvolvedor.
-
-## Objetivos Técnicos
-
-Este teste técnico tem como objetivo avaliar suas habilidades em:
-
-- Desenvolvimento de APIs RESTful com Java/Spring Boot
-- Implementação de autenticação e autorização
-- Modelagem de dados e relacionamentos
-- Implementação de regras de negócio
-- Testes unitários e de integração com alta cobertura
-- Conteinerização com Docker
-- Configuração de balanceamento de carga
-
-## Contexto do Teste
-
-Você foi designado para desenvolver uma funcionalidade de **Solicitação de Acesso a Módulos** para um sistema corporativo. Usuários autenticados podem solicitar acesso a diferentes módulos do sistema, e o acesso é concedido automaticamente após validação das regras de negócio.
-
-## Sumário
-
-# User Story
-
-## Solicitação de Acesso a Módulos
-
-**Eu** como usuário autenticado no sistema
-
-**Quero** solicitar acesso a módulos específicos
-
-**Para** realizar minhas atividades profissionais de acordo com minhas necessidades e ter as funcionalidades liberadas automaticamente
-
-## Critérios de Aceite
-
-### Autenticação de Usuário
-
-- O sistema deve permitir autenticar utilizando E-mail e Senha.
-- Quando informado usuário ou senha inválidos o login deve ser impedido.
-
-### Cadastro de Solicitação
-
-- O sistema deve permitir que um usuário autenticado crie uma nova solicitação de acesso contendo:
-  - **Módulos solicitados**: Multi-seleção, obrigatório (mínimo 1, máximo 3 módulos)
-  - **Justificativa**: Campo texto, obrigatório (mínimo 20, máximo 500 caracteres)
-  - **Urgente**: Campo que indica se a solicitação é urgente ou não.
-- O sistema deve identificar automaticamente as informações do solicitante
-  - ID do usuário solicitante
-  - Departamento do usuário
-- O sistema deve validar:
-  - Usuário não pode ter solicitação ativa para o mesmo módulo
-  - Usuário não pode solicitar módulo que já possui acesso ativo
-  - Justificativa não pode conter apenas texto genérico (ex: "teste", "aaa", "preciso")
-  - Cada módulo solicitado deve estar ativo e disponível
-- Ao criar a solicitação com sucesso, o sistema deve:
-  - Gerar um número único de protocolo (formato: SOL-YYYYMMDD-NNNN)
-  - Registrar data/hora da solicitação
-  - Validar regras de negócio e conceder acesso automaticamente se aprovado
-  - Atribuir status: "ATIVO" (se aprovado) ou "NEGADO" (se reprovado por regra)
-  - Retornar mensagem:
-    - Se aprovado: "Solicitação criada com sucesso! Protocolo: {número}. Seus acessos já estão disponíveis!"
-    - Se negado: "Solicitação negada. Motivo: {motivo da negação}"
-
-### Concessão Automática
-
-- **Compatibilidade de Departamento**:
-  - Usuários do departamento "TI" podem acessar todos os módulos
-  - Usuários do departamento "Financeiro" podem acessar: Financeiro, Relatórios, Portal
-  - Usuários do departamento "RH" podem acessar: RH, Relatórios, Portal
-  - Usuários do departamento "Operações" podem acessar: Estoque, Compras, Relatórios, Portal
-  - Outros departamentos podem acessar apenas: Portal e Relatórios
-- **Módulos Mutuamente Exclusivos**:
-  - Não é permitido ter acesso simultâneo a "Aprovador Financeiro" e "Solicitante Financeiro"
-  - Não é permitido ter acesso simultâneo a "Administrador RH" e "Colaborador RH"
-- **Limite de Módulos por Usuário**:
-  - Máximo de 5 módulos ativos simultaneamente por usuário
-  - Usuários do departamento "TI" têm limite de 10 módulos
-- **Motivos de Negação Automática**:
-  - "Departamento sem permissão para acessar este módulo"
-  - "Módulo incompatível com outro módulo já ativo em seu perfil"
-  - "Limite de módulos ativos atingido"
-  - "Justificativa insuficiente ou genérica"
-
-### Consulta de Solicitações
-
-- O sistema deve permitir ao usuário consultar apenas suas próprias solicitações
-- Filtros disponíveis:
-  - **Pesquisa por texto**: Busca por protocolo ou nome do módulo
-  - **Status**: (Ativo, Negado, Cancelado)
-  - **Período**: Data início e data fim
-  - **Urgente**: Sim ou Não
-- A consulta deve retornar uma lista paginada contendo:
-  - Protocolo
-  - Módulos solicitados
-  - Status
-  - Justificativa
-  - Marcação de urgente (se aplicável)
-  - Data da solicitação
-  - Data de expiração (180 dias após concessão)
-  - Motivo da negação (se aplicável)
-- Paginação: 10 registros por página
-- Ordenação padrão: Mais recentes primeiro
-
-### Visualização de Detalhes
-
-- O usuário pode visualizar detalhes completos de uma solicitação específica
-- Apenas as suas próprias solicitações
-- Deve exibir:
-  - Todas as informações da listagem
-  - Histórico de alterações (se houver)
-  - Data de expiração do acesso
-
-### Renovação de Acesso
-
-- Usuário pode renovar acesso a módulos quando:
-  - Apenas para seus próprios acessos
-  - Faltarem menos de 30 dias para expiração
-  - Status atual for "ATIVO"
-- Ao renovar:
-  - Criar nova solicitação vinculada à anterior
-  - Reaplicar regras de negócio
-  - Estender validade por mais 180 dias (se aprovado)
-  - Criar novo protocolo de solicitação
-
-### Cancelamento de Solicitação
-
-- O usuário pode cancelar uma solicitação com status "ATIVO"
-- Ao cancelar:
-  - Campo obrigatório: Motivo do cancelamento (10-200 caracteres)
-  - Status muda para "CANCELADO"
-  - Acesso aos módulos é revogado imediatamente
-  - Registrar motivo e data no histórico
-
-### Consulta de Módulos Disponíveis
-
-- O usuário deve conseguir listar todos os módulos disponíveis
-- Retornar:
-  - Nome do módulo
-  - Descrição
-  - Departamentos permitidos
-  - Indicador se está ativo
-  - Módulos incompatíveis (se houver)
-
-# Requisitos para Validade do Teste
-
-## Tecnologias Obrigatórias
-
-- Java 21 (obrigatório)
-- Sprint Boot 3.x
-- Spring Data JPA
-- Spring Validation
-- Postgres SQL 17
-- H2 (apenas para execução dos testes)
-
-- Maven
-- Docker
-- Docker Compose
-- Nginx (ou outra alterativa pra proxy)
-- Lombok (sugestivo)
-
-### Validações e Tratamento de Erros
-
-- Implementar validações e tratamentos de erros personalizados.
-
-### Segurança
-
-- Senhas criptografadas devem ser seguras com hash e salt
-- Token de acesso deve expirar com 15 minutos
-- Validação de token em todos os endpoints protegidos
-- Usuário só pode acessar suas próprias solicitações
-- Implementar segurança de acesso aos endpoints
-
-### Requisitos para os Testes
-
-**COBERTURA MÍNIMA OBRIGATÓRIA: 80%**
-
-**Regras Rigorosas para Testes Unitários:**
-
-- **PROIBIDO** usar `any()`, `anyString()`, `anyLong()`, etc. do Mockito
-- **OBRIGATÓRIO** usar valores específicos nos mocks: `eq()`, valores exatos
-- **OBRIGATÓRIO** verificar com `verify()` as chamadas aos mocks
-- Cobertura mínima de 90% do código (medida por JaCoCo)
-- Todos os métodos de Service devem ter testes
-- Todas as regras de negócio devem ser testadas
-- Todos os cenários de exceção devem ser testados
-
-**Configuração JaCoCo (pom.xml)**
-
-Deve incluir configuração que falhe o build se cobertura < 80%
-
-**Ferramentas Obrigatórias:** JUnit 5, Mockito (sem usar `any()`), MockMvc, Spring Security Test, JaCoCo (relatório de cobertura) e Instancio
-
-## Entregáveis
-
-### Código Fonte
-
-- Link público para repositório Git (GitHub, GitLab ou Bitbucket) ou Zip contendo projeto e histórico do GIT.
-- Commits organizados e descritivos
-- Branch `main` funcionando
-- `.gitignore` configurado adequadamente
-- Dockerfile e Docker Compose funcional
-- Monorepo com todo o código e arquivo necessário para a solução funcionar
-
-### Documentação
-
-**README.md** contendo:
-
-- Descrição do projeto
-- Tecnologias utilizadas e versões
-- Pré-requisitos (Docker, Docker Compose)
-- Como executar localmente com Docker
-- Como executar os testes
-- Como visualizar relatório de cobertura
-- Credenciais para teste
-- Exemplos de requisições
-- Arquitetura da solução (diagrama ou explicação)
-- Decisões técnicas relevantes
-
-**Relatório de Tests (JaCoCo)**
-
-- Relatório em PDF com resultado e cobertura dos testes.
-
-**Swagger/OpenAPI**:
-
-- Configurado e acessível via `/swagger-ui.html`
-- Documentação completa de todos os endpoints
-
-## Infraestrutura e Deploy
-
-O projeto deve ser provisionado via docker-compose, necessário existir o arquivo `Dockerfile` e `docker-compose.yml` na raiz do projeto.
-
-### Requisitos da infraestrutura
-
-- Provisionar o PostgreSQL.
-- Provisionar 3 Aplicações Java (app1, app2 e app3)
-- Provisionar um LoadBalancer (ex: NGINX).
-- Fornecer acesso ao swagger por meio do Proxy/LB.
-- Balanceamento de carga funcional por meio do LB - pode ser stateless.
-- Unica rede docker para todos os containers com comunicação interna onde aplicável
-- Deve ser possível configurar ambiente por variáveis de ambiente
-
-### Dados Iniciais
-
-O `data.sql` ou migrations (Flyway/Liquibase) devem popular:
-
-**Usuários - mínimo 4 usuários de departamento diferentes**
-
-**Módulos:**
-
-```
-1. Portal do Colaborador (todos os departamentos)
-2. Relatórios Gerenciais (todos os departamentos)
-3. Gestão Financeira (Financeiro, TI)
-4. Aprovador Financeiro (Financeiro, TI) *incompatível com #5
-5. Solicitante Financeiro (Financeiro, TI) *incompatível com #4
-6. Administrador RH (RH, TI) *incompatível com #7
-7. Colaborador RH (RH, TI) *incompatível com #6
-8. Gestão de Estoque (Operações, TI)
-9. Compras (Operações, TI)
-10. Auditoria (apenas TI)
-```
-
-## Critérios de Avaliação
-
-A solução será avaliada como um todo, desde a documentação a facilidade de execução, deploy e testes.
-
-- ✅ Autenticação JWT funcionando
-- ✅ CRUD de solicitações completo
-- ✅ Regras de negócio implementadas corretamente
-- ✅ Validações funcionando
-- ✅ Endpoints respondendo corretamente
-- ✅ Código limpo e legível
-- ✅ Princípios SOLID aplicados
-- ✅ Nomenclatura adequada (português ou inglês consistente)
-- ✅ Sem duplicação de código
-- ✅ Uso adequado de Java 21 features
-- ✅ Cobertura mínima de testes
-- ✅ Nenhum uso de `any()` nos testes (obrigatório)
-- ✅ Testes bem estruturados e legíveis
-- ✅ Testes de cenários positivos e negativos
-- ✅ Testes de integração funcionando
-- ✅ Relatório JaCoCo gerado e acessível
-- ✅ Dockerfile otimizado (multi-stage build)
-- ✅ docker-compose.yml completo e funcional
-- ✅ PostgreSQL 17 configurado corretamente
-- ✅ Três instâncias da aplicação rodando
-- ✅ Nginx fazendo balanceamento de carga
-- ✅ Health checks configurados
-- ✅ Rede Docker configurada
-- ✅ Aplicação sobe com `docker-compose up` sem erros
-- ✅ JWT implementado corretamente
-- ✅ Endpoints protegidos adequadamente
-- ✅ Senhas criptografadas e seguras
-- ✅ Validação de autorização
-- ✅ README completo e claro
-- ✅ Swagger configurado
-- ✅ Instruções de execução claras e funcional
-- ✅ Documentação das decisões técnicas
-
-### Diferenciais (não obrigatórios)
-
-- ⭐ Migrations com Flyway ou Liquibase
-- ⭐ Refresh token implementado
-- ⭐ Logs estruturados com Logback/SLF4J
-- ⭐ Profiles Spring bem configurados (dev/prod)
-- ⭐ Frontend para aplicação React/Angular/Vue/JQuery/Etc.
-
-## Diferenciais de alto impacto (não obrigatório)
-
-- 🌟 Documentação e diagramas da arquitetura proposta (C4, ADR’s e etc)
-- 🌟 Documentação auxiliar para ferramentas de IA (Claude Code, copilot etc)
-
-## Checklist de Entrega
-
-**Antes de enviar, verifique se:**
-
-- [ ] Todos os testes passam
-- [ ] Cobertura de testes ≥ 80%
-- [ ] `docker-compose up -d` funciona sem erros
-- [ ] Consegue fazer login via Postman/CURL
-- [ ] Consegue criar uma solicitação
-- [ ] Nginx está balanceando entre app1, app2 e app3
-- [ ] README.md está completo
-- [ ] Código compila sem erros
-- [ ] Swagger está acessível
-- [ ] Dados iniciais estão populados
-- [ ] Arquivo GIT para ignore está configurado (sem arquivos de IDE, target/, etc)
+- `test`: H2 em memória para testes
+- `prod`: PostgreSQL para produção
+- `dev`: Configurações de desenvolvimento
 
 ---
-
-## Prazo e Entrega
-
-**Prazo de entrega:** 8 dias corridos
-
-**Forma de entrega:**
-
-- Link do repositório Git Público (GitLab, GitHub, Bitbucket, etc.)
-- **Incluir no email**:
-  - Link do repositório
-  - Currículo
-  - Se usou ou não usou IA para fazer o teste.
-
----
-
-## Observações Finais
-
-### O que será desclassificatório:
-
-- ❌ Aplicação não sobe com Docker Compose
-- ❌ Cobertura de testes abaixo de 80%
-- ❌ Não usar Java 21
-- ❌ Não usar tecnologias obrigatórias para o Teste
-- ❌ Falta de balanceamento de carga (LB)
-
-### Dicas importantes:
-
-- ✅ Comece pela configuração do Docker e banco de dados
-- ✅ Implemente os testes conforme desenvolve (TDD recomendado)
-- ✅ Teste o balanceamento de carga fazendo várias requisições
-- ✅ Use o JaCoCo desde o início para acompanhar cobertura
-- ✅ Documente enquanto desenvolve
-- ✅ Faça commits frequentes e descritivos
-- ✅ Teste a aplicação do zero (clone em outra pasta e execute)
-
-## Em caso de dúvidas:
-
-Faça suposições razoáveis e documente o que for necessário da sua decisão.
-
-Você não será avaliado negativamente por tomar decisões sobre o que não está descrito ou esteja claro na documentação.
-
-O foco é nas habilidades técnicas, documentais, uso das ferramentas e entrega do projeto compilando e executando via docker-compose.
-
-## **Boa sorte! 🍀**
-
-**Aguardamos sua solução!**
