@@ -18,8 +18,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import org.instancio.Instancio;
+import org.instancio.junit.InstancioExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, InstancioExtension.class})
 @DisplayName("ModuloService - Testes Unitários")
 class ModuloServiceTest {
 

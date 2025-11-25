@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -32,8 +33,11 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.instancio.Instancio;
+import org.instancio.junit.InstancioExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, InstancioExtension.class})
 @DisplayName("SolicitacaoService - Testes Unitários")
 class SolicitacaoServiceTest {
 
@@ -123,6 +127,7 @@ class SolicitacaoServiceTest {
     void deveCriarSolicitacaoEAprovarAutomaticamenteQuandoRegrasAtendidas() {
         // Arrange
         List<Modulo> modulos = Arrays.asList(modulo1, modulo2);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
         
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(usuarioRepository.findById(eq(1L))).thenReturn(Optional.of(usuario));
@@ -139,7 +144,11 @@ class SolicitacaoServiceTest {
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(1L))).thenReturn(Arrays.asList());
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(2L))).thenReturn(Arrays.asList());
         when(acessoUsuarioModuloRepository.countByUsuarioIdAndAtivoTrue(eq(1L))).thenReturn(0L);
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacao);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(1L);
+            return sol;
+        });
 
         // Act
         SolicitacaoResponse resultado = solicitacaoService.criarSolicitacao(solicitacaoRequest);
@@ -147,12 +156,19 @@ class SolicitacaoServiceTest {
         // Assert
         assertNotNull(resultado);
         assertEquals("SOL-20231122-0001", resultado.protocolo());
+        assertEquals("ATIVO", resultado.status());
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals("SOL-20231122-0001", solicitacaoSalva.getProtocolo());
+        assertEquals(StatusSolicitacao.ATIVO, solicitacaoSalva.getStatus());
+        assertEquals(usuario.getId(), solicitacaoSalva.getUsuario().getId());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(usuarioRepository).findById(eq(1L));
         verify(moduloRepository).findAllByIdsAndAtivoTrue(eq(solicitacaoRequest.modulosIds()));
-        verify(solicitacaoRepository, atLeast(1)).save(any(Solicitacao.class));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -176,7 +192,7 @@ class SolicitacaoServiceTest {
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(usuarioRepository).findById(eq(1L));
-        verify(moduloRepository, never()).findAllByIdsAndAtivoTrue(any());
+        verify(moduloRepository, never()).findAllByIdsAndAtivoTrue(eq(solicitacaoRequest.modulosIds()));
     }
 
     @Test
@@ -324,19 +340,25 @@ class SolicitacaoServiceTest {
         CancelarSolicitacaoRequest cancelarRequest = new CancelarSolicitacaoRequest(
                 "Não preciso mais do acesso"
         );
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
 
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(solicitacaoRepository.findById(eq(1L))).thenReturn(Optional.of(solicitacao));
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacao);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> solicitacaoCaptor.getValue());
 
         // Act
         solicitacaoService.cancelarSolicitacao(1L, cancelarRequest);
 
         // Assert & Verify
+        Solicitacao solicitacaoCancelada = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoCancelada);
+        assertEquals(StatusSolicitacao.CANCELADO, solicitacaoCancelada.getStatus());
+        assertEquals("Não preciso mais do acesso", solicitacaoCancelada.getMotivoCancelamento());
+        
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findById(eq(1L));
         verify(acessoUsuarioModuloRepository).desativarAcessosPorSolicitacaoId(eq(1L));
-        verify(solicitacaoRepository).save(any(Solicitacao.class));
+        verify(solicitacaoRepository).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -358,7 +380,7 @@ class SolicitacaoServiceTest {
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findById(eq(1L));
-        verify(acessoUsuarioModuloRepository, never()).desativarAcessosPorSolicitacaoId(any());
+        verify(acessoUsuarioModuloRepository, never()).desativarAcessosPorSolicitacaoId(eq(1L));
     }
 
     @Test
@@ -381,19 +403,19 @@ class SolicitacaoServiceTest {
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findById(eq(1L));
-        verify(acessoUsuarioModuloRepository, never()).desativarAcessosPorSolicitacaoId(any());
+        verify(acessoUsuarioModuloRepository, never()).desativarAcessosPorSolicitacaoId(eq(1L));
     }
 
     @Test
     @DisplayName("Deve listar solicitações do usuário com sucesso")
     void deveListarSolicitacoesDoUsuarioComSucesso() {
         // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Solicitacao> page = new PageImpl<>(Arrays.asList(solicitacao), pageable, 1);
+        Pageable expectedPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "data_solicitacao"));
+        Page<Solicitacao> page = new PageImpl<>(Arrays.asList(solicitacao), expectedPageable, 1);
 
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(solicitacaoRepository.findByUsuarioIdWithFilters(
-                eq(1L), eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
+                eq(1L), eq(null), eq(null), eq(null), eq(null), eq(null), eq(expectedPageable)
         )).thenReturn(page);
 
         // Act
@@ -409,7 +431,7 @@ class SolicitacaoServiceTest {
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findByUsuarioIdWithFilters(
-                eq(1L), eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
+                eq(1L), eq(null), eq(null), eq(null), eq(null), eq(null), eq(expectedPageable)
         );
     }
 
@@ -425,19 +447,7 @@ class SolicitacaoServiceTest {
                 .build();
         solicitacao.getModulos().add(sm1);
         
-        Solicitacao novaSolicitacao = Solicitacao.builder()
-                .id(2L)
-                .protocolo("SOL-20231122-0002")
-                .usuario(usuario)
-                .justificativa("Renovação da solicitação SOL-20231122-0001")
-                .urgente(false)
-                .status(StatusSolicitacao.ATIVO)
-                .dataSolicitacao(LocalDateTime.now())
-                .dataExpiracao(LocalDateTime.now().plusDays(180))
-                .solicitacaoOrigem(solicitacao)
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
 
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(solicitacaoRepository.findById(eq(1L))).thenReturn(Optional.of(solicitacao));
@@ -448,7 +458,11 @@ class SolicitacaoServiceTest {
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(1L))).thenReturn(Arrays.asList());
         when(acessoUsuarioModuloRepository.countByUsuarioIdAndAtivoTrue(eq(1L))).thenReturn(0L);
         when(acessoUsuarioModuloRepository.findByUsuarioIdAndAtivoTrue(eq(1L))).thenReturn(Arrays.asList());
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(novaSolicitacao);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(2L);
+            return sol;
+        });
 
         // Act
         SolicitacaoResponse resultado = solicitacaoService.renovarSolicitacao(1L);
@@ -456,11 +470,16 @@ class SolicitacaoServiceTest {
         // Assert
         assertNotNull(resultado);
         assertEquals("SOL-20231122-0002", resultado.protocolo());
+        assertEquals("ATIVO", resultado.status());
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals("SOL-20231122-0002", solicitacaoSalva.getProtocolo());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findById(eq(1L));
-        verify(solicitacaoRepository, atLeast(1)).save(any(Solicitacao.class));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -523,6 +542,7 @@ class SolicitacaoServiceTest {
     void deveNegarSolicitacaoQuandoDepartamentoNaoTemPermissao() {
         // Arrange
         List<Modulo> modulos = Arrays.asList(modulo1);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
         
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(usuarioRepository.findById(eq(1L))).thenReturn(Optional.of(usuario));
@@ -533,20 +553,11 @@ class SolicitacaoServiceTest {
         when(solicitacaoRepository.countSolicitacoesHoje()).thenReturn(0L);
         when(moduloDepartamentoRepository.existsByModuloIdAndDepartamento(eq(1L), eq(Departamento.FINANCEIRO))).thenReturn(false);
         
-        Solicitacao solicitacaoNegada = Solicitacao.builder()
-                .id(1L)
-                .protocolo("SOL-20231122-0003")
-                .usuario(usuario)
-                .justificativa(solicitacaoRequest.justificativa())
-                .urgente(false)
-                .status(StatusSolicitacao.NEGADO)
-                .dataSolicitacao(LocalDateTime.now())
-                .motivoNegacao("Departamento sem permissão para acessar este módulo: CRM")
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
-        
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacaoNegada);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(1L);
+            return sol;
+        });
 
         SolicitacaoRequest request = new SolicitacaoRequest(
                 Arrays.asList(1L),
@@ -561,11 +572,17 @@ class SolicitacaoServiceTest {
         assertNotNull(resultado);
         assertEquals("NEGADO", resultado.status());
         assertTrue(resultado.motivoNegacao().contains("Departamento sem permissão"));
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals(StatusSolicitacao.NEGADO, solicitacaoSalva.getStatus());
+        assertTrue(solicitacaoSalva.getMotivoNegacao().contains("Departamento sem permissão"));
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(usuarioRepository).findById(eq(1L));
         verify(moduloRepository).findAllByIdsAndAtivoTrue(eq(Arrays.asList(1L)));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -588,20 +605,12 @@ class SolicitacaoServiceTest {
         when(acessoUsuarioModuloRepository.findModuloIdsAtivosByUsuarioId(eq(1L))).thenReturn(Arrays.asList());
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(1L))).thenReturn(Arrays.asList(2L));
         
-        Solicitacao solicitacaoNegada = Solicitacao.builder()
-                .id(1L)
-                .protocolo("SOL-20231122-0004")
-                .usuario(usuario)
-                .justificativa(solicitacaoRequest.justificativa())
-                .urgente(false)
-                .status(StatusSolicitacao.NEGADO)
-                .dataSolicitacao(LocalDateTime.now())
-                .motivoNegacao("Não é permitido solicitar módulos incompatíveis entre si")
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
-        
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacaoNegada);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(1L);
+            return sol;
+        });
 
         SolicitacaoRequest request = new SolicitacaoRequest(
                 Arrays.asList(1L, 2L),
@@ -616,10 +625,15 @@ class SolicitacaoServiceTest {
         assertNotNull(resultado);
         assertEquals("NEGADO", resultado.status());
         assertTrue(resultado.motivoNegacao().contains("incompatíveis"));
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals(StatusSolicitacao.NEGADO, solicitacaoSalva.getStatus());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(usuarioRepository).findById(eq(1L));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -640,20 +654,12 @@ class SolicitacaoServiceTest {
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(1L))).thenReturn(Arrays.asList());
         when(acessoUsuarioModuloRepository.countByUsuarioIdAndAtivoTrue(eq(1L))).thenReturn(5L); // Já tem 5 módulos (limite para FINANCEIRO)
         
-        Solicitacao solicitacaoNegada = Solicitacao.builder()
-                .id(1L)
-                .protocolo("SOL-20231122-0005")
-                .usuario(usuario)
-                .justificativa(solicitacaoRequest.justificativa())
-                .urgente(false)
-                .status(StatusSolicitacao.NEGADO)
-                .dataSolicitacao(LocalDateTime.now())
-                .motivoNegacao("Limite de módulos ativos atingido")
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
-        
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacaoNegada);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(1L);
+            return sol;
+        });
 
         SolicitacaoRequest request = new SolicitacaoRequest(
                 Arrays.asList(1L),
@@ -668,10 +674,15 @@ class SolicitacaoServiceTest {
         assertNotNull(resultado);
         assertEquals("NEGADO", resultado.status());
         assertEquals("Limite de módulos ativos atingido", resultado.motivoNegacao());
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals(StatusSolicitacao.NEGADO, solicitacaoSalva.getStatus());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(acessoUsuarioModuloRepository).countByUsuarioIdAndAtivoTrue(eq(1L));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -701,20 +712,12 @@ class SolicitacaoServiceTest {
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(1L))).thenReturn(Arrays.asList());
         when(acessoUsuarioModuloRepository.countByUsuarioIdAndAtivoTrue(eq(2L))).thenReturn(5L); // TI pode ter até 10
         
-        Solicitacao solicitacaoAprovada = Solicitacao.builder()
-                .id(2L)
-                .protocolo("SOL-20231122-0006")
-                .usuario(usuarioTI)
-                .justificativa("Acesso solicitado para implementação do projeto Phoenix conforme demanda do gestor")
-                .urgente(false)
-                .status(StatusSolicitacao.ATIVO)
-                .dataSolicitacao(LocalDateTime.now())
-                .dataExpiracao(LocalDateTime.now().plusDays(180))
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
-        
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacaoAprovada);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(2L);
+            return sol;
+        });
 
         SolicitacaoRequest request = new SolicitacaoRequest(
                 Arrays.asList(1L),
@@ -728,10 +731,15 @@ class SolicitacaoServiceTest {
         // Assert
         assertNotNull(resultado);
         assertEquals("ATIVO", resultado.status());
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals(StatusSolicitacao.ATIVO, solicitacaoSalva.getStatus());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(usuarioRepository).findById(eq(2L));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -768,7 +776,12 @@ class SolicitacaoServiceTest {
         when(acessoUsuarioModuloRepository.findModuloIdsAtivosByUsuarioId(eq(1L))).thenReturn(Arrays.asList());
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(1L))).thenReturn(Arrays.asList());
         when(acessoUsuarioModuloRepository.countByUsuarioIdAndAtivoTrue(eq(1L))).thenReturn(5L); // Limite atingido
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(renovacaoNegada);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(2L);
+            return sol;
+        });
 
         // Act
         SolicitacaoResponse resultado = solicitacaoService.renovarSolicitacao(1L);
@@ -777,10 +790,15 @@ class SolicitacaoServiceTest {
         assertNotNull(resultado);
         assertEquals("NEGADO", resultado.status());
         assertEquals("Limite de módulos ativos atingido", resultado.motivoNegacao());
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals(StatusSolicitacao.NEGADO, solicitacaoSalva.getStatus());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findById(eq(1L));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
@@ -800,20 +818,12 @@ class SolicitacaoServiceTest {
         when(acessoUsuarioModuloRepository.findModuloIdsAtivosByUsuarioId(eq(1L))).thenReturn(Arrays.asList(1L)); // Já tem módulo 1 ativo
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(2L))).thenReturn(Arrays.asList(1L)); // Módulo 2 incompatível com 1
         
-        Solicitacao solicitacaoNegada = Solicitacao.builder()
-                .id(1L)
-                .protocolo("SOL-20231122-0008")
-                .usuario(usuario)
-                .justificativa("Acesso solicitado para implementação do projeto Phoenix conforme demanda do gestor")
-                .urgente(false)
-                .status(StatusSolicitacao.NEGADO)
-                .dataSolicitacao(LocalDateTime.now())
-                .motivoNegacao("Módulo incompatível com outro módulo já ativo em seu perfil")
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
-        
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacaoNegada);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(1L);
+            return sol;
+        });
 
         SolicitacaoRequest request = new SolicitacaoRequest(
                 Arrays.asList(2L),
@@ -828,23 +838,28 @@ class SolicitacaoServiceTest {
         assertNotNull(resultado);
         assertEquals("NEGADO", resultado.status());
         assertTrue(resultado.motivoNegacao().contains("incompatível"));
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertEquals(StatusSolicitacao.NEGADO, solicitacaoSalva.getStatus());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(acessoUsuarioModuloRepository).findModuloIdsAtivosByUsuarioId(eq(1L));
         verify(moduloIncompativelRepository).findModulosIncompatibilidadesByModuloId(eq(2L));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 
     @Test
     @DisplayName("Deve listar solicitações com filtros de status")
     void deveListarSolicitacoesComFiltrosDeStatus() {
         // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Solicitacao> page = new PageImpl<>(Arrays.asList(solicitacao), pageable, 1);
+        Pageable expectedPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "data_solicitacao"));
+        Page<Solicitacao> page = new PageImpl<>(Arrays.asList(solicitacao), expectedPageable, 1);
 
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(solicitacaoRepository.findByUsuarioIdWithFilters(
-                eq(1L), eq("ATIVO"), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
+                eq(1L), eq("ATIVO"), eq(null), eq(null), eq(null), eq(null), eq(expectedPageable)
         )).thenReturn(page);
 
         // Act
@@ -859,7 +874,7 @@ class SolicitacaoServiceTest {
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(solicitacaoRepository).findByUsuarioIdWithFilters(
-                eq(1L), eq("ATIVO"), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
+                eq(1L), eq("ATIVO"), eq(null), eq(null), eq(null), eq(null), eq(expectedPageable)
         );
     }
 
@@ -868,12 +883,12 @@ class SolicitacaoServiceTest {
     void deveListarSolicitacoesComFiltroUrgente() {
         // Arrange
         solicitacao.setUrgente(true);
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Solicitacao> page = new PageImpl<>(Arrays.asList(solicitacao), pageable, 1);
+        Pageable expectedPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "data_solicitacao"));
+        Page<Solicitacao> page = new PageImpl<>(Arrays.asList(solicitacao), expectedPageable, 1);
 
         when(authService.getUsuarioLogadoId()).thenReturn(1L);
         when(solicitacaoRepository.findByUsuarioIdWithFilters(
-                eq(1L), eq(null), eq(true), eq(null), eq(null), eq(null), any(Pageable.class)
+                eq(1L), eq(null), eq(true), eq(null), eq(null), eq(null), eq(expectedPageable)
         )).thenReturn(page);
 
         // Act
@@ -996,20 +1011,12 @@ class SolicitacaoServiceTest {
         when(moduloIncompativelRepository.findModulosIncompatibilidadesByModuloId(eq(2L))).thenReturn(Arrays.asList());
         when(acessoUsuarioModuloRepository.countByUsuarioIdAndAtivoTrue(eq(1L))).thenReturn(0L);
         
-        Solicitacao solicitacaoUrgente = Solicitacao.builder()
-                .id(1L)
-                .protocolo("SOL-20231122-0009")
-                .usuario(usuario)
-                .justificativa("Acesso solicitado para implementação do projeto Phoenix conforme demanda do gestor")
-                .urgente(true)
-                .status(StatusSolicitacao.ATIVO)
-                .dataSolicitacao(LocalDateTime.now())
-                .dataExpiracao(LocalDateTime.now().plusDays(180))
-                .modulos(new HashSet<>())
-                .historico(new HashSet<>())
-                .build();
-        
-        when(solicitacaoRepository.save(any(Solicitacao.class))).thenReturn(solicitacaoUrgente);
+        ArgumentCaptor<Solicitacao> solicitacaoCaptor = ArgumentCaptor.forClass(Solicitacao.class);
+        when(solicitacaoRepository.save(solicitacaoCaptor.capture())).thenAnswer(invocation -> {
+            Solicitacao sol = solicitacaoCaptor.getValue();
+            sol.setId(1L);
+            return sol;
+        });
 
         SolicitacaoRequest request = new SolicitacaoRequest(
                 Arrays.asList(1L, 2L),
@@ -1024,10 +1031,16 @@ class SolicitacaoServiceTest {
         assertNotNull(resultado);
         assertTrue(resultado.urgente());
         assertEquals("ATIVO", resultado.status());
+        
+        Solicitacao solicitacaoSalva = solicitacaoCaptor.getValue();
+        assertNotNull(solicitacaoSalva);
+        assertTrue(solicitacaoSalva.getUrgente());
+        assertEquals(StatusSolicitacao.ATIVO, solicitacaoSalva.getStatus());
 
         // Verify
         verify(authService).getUsuarioLogadoId();
         verify(usuarioRepository).findById(eq(1L));
+        verify(solicitacaoRepository, atLeast(1)).save(solicitacaoCaptor.capture());
     }
 }
 

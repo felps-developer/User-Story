@@ -24,8 +24,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mockStatic;
+import org.instancio.Instancio;
+import org.instancio.junit.InstancioExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, InstancioExtension.class})
 @DisplayName("AuthService - Testes Unitários")
 class AuthServiceTest {
 

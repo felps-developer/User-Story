@@ -1,7 +1,6 @@
 package com.supera.accessrequest.dto;
 
 import com.supera.accessrequest.entity.Solicitacao;
-import com.supera.accessrequest.entity.SolicitacaoModulo;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +19,8 @@ public record SolicitacaoResponse(
         LocalDateTime dataExpiracao,
         Long usuarioId,
         String usuarioNome,
-        String departamento
+        String departamento,
+        List<HistoricoResponse> historico
 ) {
     public static SolicitacaoResponse fromEntity(Solicitacao solicitacao) {
         return new SolicitacaoResponse(
@@ -41,10 +41,28 @@ public record SolicitacaoResponse(
                 solicitacao.getDataExpiracao(),
                 solicitacao.getUsuario().getId(),
                 solicitacao.getUsuario().getNome(),
-                solicitacao.getUsuario().getDepartamento().name()
+                solicitacao.getUsuario().getDepartamento().name(),
+                solicitacao.getHistorico().stream()
+                        .map(h -> new HistoricoResponse(
+                                h.getId(),
+                                h.getAcao(),
+                                h.getDescricao(),
+                                h.getUsuario().getNome(),
+                                h.getDataAcao()
+                        ))
+                        .sorted((h1, h2) -> h2.dataAcao().compareTo(h1.dataAcao())) // Mais recentes primeiro
+                        .collect(Collectors.toList())
         );
     }
 
     public record ModuloSimpleResponse(Long id, String nome) {}
+    
+    public record HistoricoResponse(
+            Long id,
+            String acao,
+            String descricao,
+            String usuarioNome,
+            LocalDateTime dataAcao
+    ) {}
 }
 
