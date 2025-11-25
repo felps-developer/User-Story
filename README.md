@@ -384,41 +384,41 @@ start target\site\index.html
 open target/site/index.html
 ```
 
-### 3️⃣ Gerar PDF do Relatório JaCoCo
+### 3️⃣ Gerar PDF Automaticamente do Relatório JaCoCo
 
-Para gerar o relatório em PDF, siga os passos abaixo:
+Gera o relatório JaCoCo em PDF automaticamente, sem necessidade de conversão manual:
 
-**1. Gere o relatório HTML primeiro:**
-
-```bash
-mvn clean test jacoco:report
-```
-
-**2. Abra o relatório no navegador:**
+**Opção 1: Usando perfil Maven (Recomendado)**
 
 ```bash
-# Windows
-start target\site\jacoco\index.html
-
-# Linux/Mac
-open target/site/jacoco/index.html
+mvn clean test jacoco:report -Ppdf
 ```
 
-**3. No navegador, pressione `Ctrl + P` (Imprimir)**
+**Opção 2: Usando exec:java diretamente**
 
-**4. Configure a impressão:**
+```bash
+mvn clean test jacoco:report exec:java@generate-pdf
+```
 
-- **Destino:** Selecione **"Salvar como PDF"** ou **"Microsoft Print to PDF"**
-- **Layout:** **Paisagem** (recomendado para tabelas)
-- **Páginas:** Todas
-- **Margens:** Padrão ou Mínimas
-- **Opções adicionais:**
-  - ✅ Marque **"Gráficos de fundo"** (para manter as cores dos gráficos)
-  - ✅ Marque **"Cabeçalhos e rodapés"** (para data/hora)
+**Arquivo gerado:**
 
-**5. Clique em "Salvar"**
+- `target/site/jacoco/relatorio-jacoco.pdf` - Relatório completo em PDF
 
-**Nome sugerido:** `relatorio-jacoco-cobertura-AAAA-MM-DD.pdf`
+**O que acontece:**
+
+1. ✅ Executa todos os testes
+2. ✅ Gera relatório HTML do JaCoCo
+3. ✅ Converte automaticamente HTML para PDF
+4. ✅ Salva o PDF em `target/site/jacoco/relatorio-jacoco.pdf`
+
+**Características do PDF:**
+
+- ✅ Preserva formatação e cores do HTML
+- ✅ Inclui todos os gráficos de cobertura
+- ✅ Tabelas legíveis e bem formatadas
+- ✅ Layout otimizado para visualização
+
+**Nota:** O PDF é gerado automaticamente após a criação do relatório HTML. Se o HTML não existir, o processo falhará com mensagem de erro clara.
 
 ### 4️⃣ Visualizando os Gráficos
 

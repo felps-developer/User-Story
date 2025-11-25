@@ -196,6 +196,30 @@ class SolicitacaoServiceTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando justificativa contém termo genérico com espaço")
+    void deveLancarExcecaoQuandoJustificativaContemTermoGenericoComEspaco() {
+        // Arrange - Testa o branch onde equals é false mas contains é true
+        SolicitacaoRequest requestInvalido = new SolicitacaoRequest(
+                Arrays.asList(1L),
+                "preciso de acesso ao sistema",
+                false
+        );
+
+        when(authService.getUsuarioLogadoId()).thenReturn(1L);
+        when(usuarioRepository.findById(eq(1L))).thenReturn(Optional.of(usuario));
+
+        // Act & Assert
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> solicitacaoService.criarSolicitacao(requestInvalido));
+        assertEquals("Justificativa insuficiente ou genérica", exception.getMessage());
+
+        // Verify
+        verify(authService).getUsuarioLogadoId();
+        verify(usuarioRepository).findById(eq(1L));
+        verify(moduloRepository, never()).findAllByIdsAndAtivoTrue(eq(Arrays.asList(1L)));
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção quando módulo não existe ou está inativo")
     void deveLancarExcecaoQuandoModuloNaoExisteOuInativo() {
         // Arrange
