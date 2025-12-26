@@ -1,4 +1,4 @@
-![Supera Cover](imgs/supera_cover.jpeg)
+
 
 # Sistema de Solicitação de Acesso a Módulos
 
